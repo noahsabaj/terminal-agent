@@ -128,13 +128,14 @@ if ! podman image exists "$IMAGE_NAME" 2>/dev/null; then
     echo ""
 fi
 
-# Run sandboxed
+# Run sandboxed (--network=host allows access to Ollama on host)
 exec podman run --rm -it \
     -v "$(pwd):/workspace/project:Z" \
     --workdir /workspace/project \
     --tmpfs /tmp \
     --security-opt=no-new-privileges \
     --hostname terminal-agent \
+    --network=host \
     -e TERM="$TERM" \
     "$IMAGE_NAME" "$@"
 WRAPPER

@@ -113,13 +113,14 @@ if %ERRORLEVEL% neq 0 (
     echo.
 )
 
-:: Run sandboxed
+:: Run sandboxed (--network=host allows access to Ollama on host)
 podman run --rm -it ^
     -v "%CD%:/workspace/project" ^
     --workdir /workspace/project ^
     --tmpfs /tmp ^
     --security-opt=no-new-privileges ^
     --hostname terminal-agent ^
+    --network=host ^
     -e TERM=xterm-256color ^
     %IMAGE_NAME% %*
 '@
