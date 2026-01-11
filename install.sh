@@ -129,9 +129,10 @@ if ! podman image exists "$IMAGE_NAME" 2>/dev/null; then
 fi
 
 # Run sandboxed (--network=host allows access to Ollama on host)
+# Mount at same path so container sees real directory name
 exec podman run --rm -it \
-    -v "$(pwd):/workspace/project:Z" \
-    --workdir /workspace/project \
+    -v "$(pwd):$(pwd):Z" \
+    --workdir "$(pwd)" \
     --tmpfs /tmp \
     --security-opt=no-new-privileges \
     --hostname terminal-agent \

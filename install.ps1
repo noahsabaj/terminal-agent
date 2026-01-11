@@ -114,9 +114,10 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: Run sandboxed (--network=host allows access to Ollama on host)
+:: Mount at same path so container sees real directory name
 podman run --rm -it ^
-    -v "%CD%:/workspace/project" ^
-    --workdir /workspace/project ^
+    -v "%CD%:%CD%" ^
+    --workdir "%CD%" ^
     --tmpfs /tmp ^
     --security-opt=no-new-privileges ^
     --hostname terminal-agent ^
