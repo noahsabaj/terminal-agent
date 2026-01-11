@@ -120,4 +120,4 @@ Inside the agent:
 
 ## License
 
-MIT
+Dual-licensed under [MIT](LICENSE) or [Apache 2.0](LICENSE), at your option.
