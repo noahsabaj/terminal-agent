@@ -1,5 +1,5 @@
-# Terminal Coder - Sandboxed Container
-# Uses Python 3.12 slim for smaller image size
+# Terminal Agent - Sandboxed Container
+# Transparent to user - they won't know they're in a container
 
 FROM python:3.12-slim
 
@@ -9,18 +9,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /workspace
+# Set working directory for the agent code
+WORKDIR /app
 
-# Copy requirements and install Python dependencies
+# Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the agent
 COPY agent.py .
 
-# The workspace will be mounted from host for file access
-# Mount point: /workspace/project
+# Create workspace directory (will be mounted from host)
+RUN mkdir -p /workspace/project
 
-# Run the agent
-ENTRYPOINT ["python", "agent.py"]
+# Set the workspace as the default directory
+WORKDIR /workspace/project
+
+# Run the agent - it will operate on files in /workspace/project
+ENTRYPOINT ["python", "/app/agent.py"]
