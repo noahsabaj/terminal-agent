@@ -97,6 +97,13 @@ Invoke-WebRequest -Uri "$repoUrl/requirements.txt" -OutFile "$installDir\require
 
 Write-Host "✓ Downloaded all files" -ForegroundColor Green
 
+# Remove old container image so it rebuilds with new code
+$imageExists = podman image exists "terminal-agent" 2>$null
+if ($LASTEXITCODE -eq 0) {
+    podman rmi -f "terminal-agent" 2>$null | Out-Null
+    Write-Host "✓ Cleared old container image" -ForegroundColor Green
+}
+
 # Create the agent wrapper script (batch file for Windows)
 $agentBat = @'
 @echo off

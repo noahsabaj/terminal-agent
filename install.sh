@@ -108,6 +108,12 @@ curl -fsSL "$REPO_URL/requirements.txt" -o "$INSTALL_DIR/requirements.txt"
 
 echo -e "${GREEN}✓${NC} Downloaded all files"
 
+# Remove old container image so it rebuilds with new code
+if podman image exists "terminal-agent" 2>/dev/null; then
+    podman rmi -f "terminal-agent" >/dev/null 2>&1
+    echo -e "${GREEN}✓${NC} Cleared old container image"
+fi
+
 # Create the agent wrapper script
 cat > "$BIN_DIR/agent" << 'WRAPPER'
 #!/bin/bash
