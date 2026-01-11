@@ -9,11 +9,14 @@ A coding agent for the terminal, powered by Ollama Cloud.
 
 ## Install
 
+**macOS / Linux:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/noahsabaj/terminal-agent/main/install.sh | bash
 ```
 
-That's it. Requires [Podman](https://podman.io/docs/installation).
+**Windows:** Coming soon.
+
+Requires [Podman](https://podman.io/docs/installation). On macOS, run `podman machine init && podman machine start` first.
 
 ## Usage
 
