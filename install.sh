@@ -136,14 +136,17 @@ fi
 
 # Run sandboxed (--network=host allows access to Ollama on host)
 # Mount at same path so container sees real directory name
+# Mount ~/.ollama for authentication with Ollama cloud services
 exec podman run --rm -it \
     -v "$(pwd):$(pwd):Z" \
+    -v "$HOME/.ollama:$HOME/.ollama:ro" \
     --workdir "$(pwd)" \
     --tmpfs /tmp \
     --security-opt=no-new-privileges \
     --hostname terminal-agent \
     --network=host \
     -e TERM="$TERM" \
+    -e HOME="$HOME" \
     "$IMAGE_NAME" "$@"
 WRAPPER
 

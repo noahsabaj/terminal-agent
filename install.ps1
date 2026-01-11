@@ -122,14 +122,17 @@ if %ERRORLEVEL% neq 0 (
 
 :: Run sandboxed (--network=host allows access to Ollama on host)
 :: Mount at same path so container sees real directory name
+:: Mount .ollama for authentication with Ollama cloud services
 podman run --rm -it ^
     -v "%CD%:%CD%" ^
+    -v "%USERPROFILE%\.ollama:%USERPROFILE%\.ollama:ro" ^
     --workdir "%CD%" ^
     --tmpfs /tmp ^
     --security-opt=no-new-privileges ^
     --hostname terminal-agent ^
     --network=host ^
     -e TERM=xterm-256color ^
+    -e HOME=%USERPROFILE% ^
     %IMAGE_NAME% %*
 '@
 
