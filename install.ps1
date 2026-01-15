@@ -41,22 +41,6 @@ if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 10)) {
 
 Write-Host "✓ Python $pythonVersion found" -ForegroundColor Green
 
-# Check for pip
-$pipWorks = $false
-try {
-    & $pythonPath.Source -m pip --version 2>$null | Out-Null
-    $pipWorks = $true
-} catch {}
-
-if (-not $pipWorks) {
-    Write-Host "✗ pip not found" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "  Try running: python -m ensurepip"
-    exit 1
-}
-
-Write-Host "✓ pip found" -ForegroundColor Green
-
 # Check for Ollama
 $ollamaPath = Get-Command ollama -ErrorAction SilentlyContinue
 if (-not $ollamaPath) {
@@ -80,35 +64,57 @@ Write-Host ""
 Read-Host "Press Enter to continue (or Ctrl+C to sign in first)"
 Write-Host ""
 
-# Install terminal-agent via pip
-Write-Host "↓ Installing open-terminal-agent..." -ForegroundColor Yellow
-& $pythonPath.Source -m pip install --user open-terminal-agent
+# Create directories
+$installDir = "$env:USERPROFILE\.terminal-agent"
+$binDir = "$env:USERPROFILE\.local\bin"
 
-Write-Host "✓ Installed terminal-agent" -ForegroundColor Green
+if (-not (Test-Path $installDir)) {
+    New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+}
+if (-not (Test-Path "$installDir\src\terminal_agent")) {
+    New-Item -ItemType Directory -Path "$installDir\src\terminal_agent" -Force | Out-Null
+}
+if (-not (Test-Path $binDir)) {
+    New-Item -ItemType Directory -Path $binDir -Force | Out-Null
+}
 
-# Check if Scripts directory is in PATH
-$scriptsDir = "$env:USERPROFILE\AppData\Local\Programs\Python\Python$major$minor\Scripts"
-$altScriptsDir = "$env:USERPROFILE\.local\bin"
+# Download source files from GitHub
+$repoUrl = "https://raw.githubusercontent.com/noahsabaj/open-terminal-agent/main"
+
+Write-Host "↓ Downloading source files..." -ForegroundColor Yellow
+Invoke-WebRequest -Uri "$repoUrl/src/terminal_agent/__init__.py" -OutFile "$installDir\src\terminal_agent\__init__.py"
+Invoke-WebRequest -Uri "$repoUrl/src/terminal_agent/agent.py" -OutFile "$installDir\src\terminal_agent\agent.py"
+Write-Host "✓ Downloaded source files" -ForegroundColor Green
+
+# Create virtual environment
+Write-Host "↓ Creating virtual environment..." -ForegroundColor Yellow
+& $pythonPath.Source -m venv "$installDir\venv"
+Write-Host "✓ Created virtual environment" -ForegroundColor Green
+
+# Install dependencies
+Write-Host "↓ Installing dependencies..." -ForegroundColor Yellow
+& "$installDir\venv\Scripts\pip.exe" install --quiet ollama pygments rich
+Write-Host "✓ Installed dependencies" -ForegroundColor Green
+
+# Create wrapper batch file
+$wrapperContent = @"
+@echo off
+set PYTHONPATH=$installDir\src;%PYTHONPATH%
+"$installDir\venv\Scripts\python.exe" -c "from terminal_agent import run_agent; run_agent()" %*
+"@
+
+$wrapperContent | Out-File -FilePath "$binDir\terminal-agent.bat" -Encoding ASCII
+Write-Host "✓ Installed terminal-agent command" -ForegroundColor Green
+
+# Add to PATH if needed
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-
-$needPathUpdate = $false
-if ($userPath -notlike "*Scripts*" -and $userPath -notlike "*\.local\bin*") {
-    # Try to find the actual Scripts directory
-    $possiblePaths = @(
-        "$env:USERPROFILE\AppData\Local\Programs\Python\Python$major$minor\Scripts",
-        "$env:USERPROFILE\AppData\Roaming\Python\Python$major$minor\Scripts",
-        "$env:LOCALAPPDATA\Programs\Python\Python$major$minor\Scripts"
-    )
-
-    foreach ($path in $possiblePaths) {
-        if (Test-Path $path) {
-            [Environment]::SetEnvironmentVariable("Path", "$userPath;$path", "User")
-            $env:Path = "$env:Path;$path"
-            Write-Host "✓ Added to PATH: $path" -ForegroundColor Green
-            $needPathUpdate = $true
-            break
-        }
-    }
+if ($userPath -notlike "*$binDir*") {
+    [Environment]::SetEnvironmentVariable("Path", "$userPath;$binDir", "User")
+    $env:Path = "$env:Path;$binDir"
+    Write-Host "✓ Added to PATH" -ForegroundColor Green
+    $needPathUpdate = $true
+} else {
+    Write-Host "✓ PATH already configured" -ForegroundColor Green
 }
 
 Write-Host ""
