@@ -17,7 +17,7 @@ from importlib.metadata import version, PackageNotFoundError
 from pathlib import Path
 from typing import Any
 
-from ollama import chat, ChatResponse, web_search, web_fetch
+from ollama import chat, ChatResponse, pull, web_search, web_fetch
 from pygments import highlight
 from pygments.lexers import get_lexer_for_filename, TextLexer
 from pygments.formatters import TerminalFormatter
@@ -93,6 +93,22 @@ DANGEROUS_PATTERNS = {
 # Model configuration (can be changed via --model flag or /model command)
 DEFAULT_MODEL = "minimax-m2.1:cloud"
 MODEL = DEFAULT_MODEL
+
+
+def ensure_model_available(model_name: str) -> bool:
+    """Pull model manifest if needed (especially for cloud models).
+
+    Cloud models require pulling their manifest before use.
+    This is fast (only ~327 bytes) but necessary.
+
+    Returns:
+        True if model is available, False if pull failed.
+    """
+    try:
+        pull(model_name)
+        return True
+    except Exception as e:
+        return False
 
 
 # Permission modes
@@ -935,8 +951,15 @@ OUTPUT FORMATTING:
                     print(f"          /model deepseek-v3.1:671b-cloud")
                     print(f"          /model minimax-m2.1:cloud\n")
                 else:
-                    MODEL = parts[1].strip()
-                    print(f"{ASSISTANT_COLOR}Switched to model: {MODEL}{RESET}\n")
+                    new_model = parts[1].strip()
+                    print(f"{THINKING_COLOR}Pulling model...{RESET}", end=" ", flush=True)
+                    if ensure_model_available(new_model):
+                        MODEL = new_model
+                        print(f"{TOOL_COLOR}✓{RESET}")
+                        print(f"{ASSISTANT_COLOR}Switched to model: {MODEL}{RESET}\n")
+                    else:
+                        print(f"{ERROR_COLOR}✗{RESET}")
+                        print(f"{ERROR_COLOR}Failed to pull model: {new_model}{RESET}\n")
                 continue
 
             elif cmd == "/clear":
