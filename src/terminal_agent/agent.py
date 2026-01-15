@@ -13,6 +13,7 @@ import sys
 import threading
 import time
 from datetime import datetime
+from importlib.metadata import version, PackageNotFoundError
 from pathlib import Path
 from typing import Any
 
@@ -736,7 +737,10 @@ def print_thinking(thinking: str | None):
             print(f"{THINKING_COLOR}{thinking}{RESET}")
 
 
-VERSION = "0.2.1"
+try:
+    VERSION = version("open-terminal-agent")
+except PackageNotFoundError:
+    VERSION = "dev"
 
 
 def get_short_path() -> str:
