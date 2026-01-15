@@ -101,7 +101,10 @@ console = Console()
 
 # Token tracking
 class TokenTracker:
-    def __init__(self):
+    """Tracks cumulative token usage across API calls."""
+
+    def __init__(self) -> None:
+        """Initialize token counters to zero."""
         self.total_input = 0
         self.total_output = 0
 
@@ -344,16 +347,16 @@ def edit_file(path: str, old_text: str, new_text: str) -> dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
-def check_dangerous_command(command: str) -> tuple[bool, str]:
+def check_dangerous_command(command: str) -> dict[str, Any]:
     """Check if a command matches any dangerous pattern.
 
     Returns:
-        (is_dangerous, explanation) - True with explanation if dangerous, False with empty string if safe
+        A dictionary with is_dangerous (bool) and explanation (str)
     """
     for pattern, explanation in DANGEROUS_PATTERNS.items():
         if re.search(pattern, command, re.IGNORECASE):
-            return True, explanation
-    return False, ""
+            return {"is_dangerous": True, "explanation": explanation}
+    return {"is_dangerous": False, "explanation": ""}
 
 
 def run_bash(command: str, timeout: int = 30, output_lines: str = "both") -> dict[str, Any]:
@@ -376,14 +379,14 @@ def run_bash(command: str, timeout: int = 30, output_lines: str = "both") -> dic
         A dictionary with stdout, stderr, and exit_code
     """
     # Check for dangerous commands FIRST - these are blocked unconditionally
-    is_dangerous, explanation = check_dangerous_command(command)
-    if is_dangerous:
+    danger_check = check_dangerous_command(command)
+    if danger_check["is_dangerous"]:
         return {
             "success": False,
             "blocked": True,
             "error": f"BLOCKED: This command is dangerous and cannot be executed.",
             "command": command,
-            "reason": explanation
+            "reason": danger_check["explanation"]
         }
 
     # Validate/clamp inputs
@@ -657,7 +660,7 @@ def get_short_path() -> str:
     return cwd
 
 
-def print_banner():
+def print_banner() -> None:
     """Print the startup banner with ASCII art."""
     short_path = get_short_path()
 
@@ -675,7 +678,7 @@ def print_banner():
 """)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description='Terminal Coder - A coding agent powered by Ollama Cloud'
@@ -693,7 +696,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_agent():
+def run_agent() -> None:
     """Main agent loop."""
     global MODEL, YOLO_MODE
 
