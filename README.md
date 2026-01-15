@@ -2,17 +2,11 @@
 
 A coding agent for the terminal, powered by Ollama Cloud.
 
-![Terminal Agent](https://img.shields.io/badge/version-0.2-green)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue)
 
 ## Install
 
-**pip (recommended):**
-```bash
-pip install open-terminal-agent
-```
-
-**macOS / Linux (one-liner):**
+**macOS / Linux:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/noahsabaj/open-terminal-agent/main/install.sh | bash
 ```
@@ -86,12 +80,6 @@ Inside the agent:
 
 ## Uninstall
 
-**If installed via pip:**
-```bash
-pip uninstall open-terminal-agent
-```
-
-**If installed via curl:**
 ```bash
 rm -rf ~/.terminal-agent ~/.local/bin/terminal-agent
 ```
