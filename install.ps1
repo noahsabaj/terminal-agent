@@ -117,6 +117,11 @@ podman image exists %IMAGE_NAME% >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     echo Setting up Terminal Agent (first run only^)...
     podman build -t %IMAGE_NAME% -f "%AGENT_DIR%\Containerfile" "%AGENT_DIR%"
+    if %ERRORLEVEL% neq 0 (
+        echo.
+        echo Build failed. Please check the error above.
+        exit /b 1
+    )
     echo.
 )
 
