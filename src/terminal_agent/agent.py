@@ -43,7 +43,6 @@ RESET = "\033[0m"
 # boundary - these patterns are trivially bypassed. It's a seatbelt warning
 # light, not an airbag.
 #
-# OPTIONAL: Container sandbox (--sandbox flag) for additional isolation.
 # =============================================================================
 
 # =============================================================================
